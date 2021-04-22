@@ -26,10 +26,14 @@
 
 
 import config as cf
+import csv
 from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
 from DISClib.DataStructures import mapentry as me
+from DISClib.DataStructures import rbt
 from DISClib.Algorithms.Sorting import shellsort as sa
+from DISClib.DataStructures import arraylistiterator as al_it
+from DISClib.DataStructures import linkedlistiterator as ll_it 
 assert cf
 
 """
@@ -39,12 +43,53 @@ los mismos.
 
 # Construccion de modelos
 
+def req_1_cmpfunc(characteristic: int, list1, list2):
+    char_1 = lt.getElement(list1, characteristic)
+    char_2 = lt.getElement(list2, characteristic)
+    id_1 = lt.getElement(list1, 19)
+    id_2 = lt.getElement(list2, 19)
+    if char_1 < char_2:
+        return -1
+    elif char_1 > char_2:
+        return 1
+    else:
+        if id_1 < id_2:
+            return -1
+        elif id_1 > id_2:
+            return 1
+        else:
+            return 0
+
+def count_artists(rango, reproducciones) -> int:
+    artists_ids = mp.newMap(numelements=reproducciones)
+    rango_it = ll_it.newIterator(rango)
+    while ll_it.hasNext(rango_it):
+        mp.put(artists_ids, ll_it.next(rango_it), 1)
+    return mp.size(artists_ids)
+
+def type_var(var):
+    if var.isnumeric():
+        return 'i'
+    elif var.replace('.','').isnumeric():
+        return 'f'
+    else:
+        return 's'
+
 class file_proc:
-    def __init__(self, filepath: str, *args):
+    def indexes(self):
+        f = open(self.filepath, 'r')
+        f.readline()
+        line = f.readline()
+        f.close()
+        params = line.replace('"','').split(',')
+        indexes = lt.newList(datastructure='ARRAY_LIST')
+        for par in params:
+            lt.addLast(indexes, type_var(par))
+        self.index_types = indexes
+    
+    def __init__(self, filepath: str):
         self.filepath = filepath
-        self.index_types = lt.newList(datastructure='ARRAY_LIST')
-        for itype in args:
-            lt.addLast(self.index_types, itype)
+        self.indexes()
 
 class catalog:
     def array_line(self, line, index_types):
@@ -54,11 +99,17 @@ class catalog:
             for element in line.items():
                 element_obj = element[1].replace('"', '')
                 if lt.getElement(index_types, i) == 'f':
-                    lt.addLast(categories, float(element_obj))
+                    if element_obj:
+                        lt.addLast(array, float(element_obj))
+                    else:
+                        lt.addLast(array, 0.0)
                 elif lt.getElement(index_types, i) == 'i':
-                    lt.addLast(categories, int(element_obj))
+                    if element_obj:
+                        lt.addLast(array, int(element_obj))
+                    else:
+                        lt.addLast(array, 0)
                 else:
-                    lt.addLast(categories, element_obj)
+                    lt.addLast(array, element_obj)
                 i += 1
             return array
         else:
@@ -80,6 +131,36 @@ class catalog:
         self.basic_catalog = self.create_matrix(file_basic)
         self.characteristics_catalog = self.create_matrix(file_characteristics)
         self.sentiments_catalog = self.create_matrix(file_sentiments)
+
+    def req_1(self, characteristic: int, minimo, maximo):
+        cmpfunc = lambda a,b: req_1_cmpfunc(characteristic,a,b)
+        char_rbt = rbt.newMap(cmpfunc)
+        for music in catalog_iterator(self, 1):
+            rbt.put(char_rbt, music, lt.getElement(music, 12))
+        rango = rbt.values(char_rbt, minimo, maximo)
+        reproducciones = lt.size(rango)
+        artistas = count_artists(rango, reproducciones)
+        return (reproducciones, artistas)
+
+class catalog_iterator:
+    def __init__(self, music_catalog: catalog, index:int):
+        this_catalog = None
+        if index == 0:
+            this_catalog = music_catalog.basic_catalog
+        elif index == 1:
+            this_catalog = music_catalog.characteristics_catalog
+        elif index == 2:
+            this_catalog = music_catalog.sentiments_catalog
+        self.m_it = al_it.newIterator(this_catalog)
+
+    def __next__(self):
+        if al_it.hasNext(self.m_it):
+            return al_it.next(self.m_it)
+        else:
+            raise StopIteration
+    
+    def __iter__(self):
+        return self
 
 
 

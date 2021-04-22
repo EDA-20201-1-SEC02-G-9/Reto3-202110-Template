@@ -48,14 +48,19 @@ catalog = None
 """
 Menu principal
 """
+catalog = None
 while True:
     printMenu()
     inputs = input('Seleccione una opción para continuar\n')
     if int(inputs[0]) == 1:
         print("Cargando información de los archivos ....")
-
+        catalog = controller.create_catalog()
     elif int(inputs[0]) == 2:
-        pass
+        char_i = int(input("Introduzca el índice de la característica: "))
+        minimo = input("Introduzca el mínimo: ")
+        maximo = input("Introduzca el máximo: ")
+        resultado = controller.req_1(catalog, char_i, minimo, maximo)
+        print("{} reproducciones y {} artistas".format(*resultado))
     elif int(inputs[0]) == 3:
         pass
     elif int(inputs[0]) == 4:
