@@ -22,6 +22,8 @@
 
 import config as cf
 from DISClib.ADT import list as lt
+from DISClib.ADT import map as mp
+
 import model
 import csv
 
@@ -30,8 +32,20 @@ import csv
 El controlador se encarga de mediar entre la vista y el modelo.
 """
 
+def create_index_map(first_line):
+    first_line = first_line.replace('"','')
+    cate_list = first_line.split(',')
+    index_map = mp.newMap()
+    for i, category in enumerate(cate_list, 1):
+        mp.put(index_map, category, i)
+    return index_map
+
+index_map = None
+
 # Inicialización del Catálogo de libros    
 def create_catalog():
+    global index_map
+    index_map = create_index_map('"instrumentalness","liveness","speechiness","danceability","valence","loudness","tempo","acousticness","energy","mode","key","artist_id","tweet_lang","track_id","created_at","lang","time_zone","user_id","id"')
     file_1 = model.file_proc("Data/user_track_hashtag_timestamp-small.csv")
     file_2 = model.file_proc("Data/context_content_features-small.csv")
     file_3 = model.file_proc("Data/sentiment_values.csv")
@@ -41,7 +55,9 @@ def create_catalog():
 # Funciones de ordenamiento
 
 # Funciones de consulta sobre el catálogo
-def req_1(catalog: model.catalog, characteristic_index: int, minimo, maximo):
+def req_1(catalog: model.catalog, characteristic_name: str, minimo, maximo):
+    global index_map
+    characteristic_index = mp.get(index_map, characteristic_name)['value']
     t_min = model.type_var(minimo)
     if t_min == 'i':
         minimo = int(minimo)
@@ -59,3 +75,33 @@ def req_1(catalog: model.catalog, characteristic_index: int, minimo, maximo):
             lt.addLast(real_minimo, '')
             lt.addLast(real_maximo, '')
     return catalog.req_1(characteristic_index, real_minimo, real_maximo)
+
+def req_2(catalog: model.catalog, en_min: float, en_max: float, dan_min: float, dan_max: float):
+    real_minimo = lt.newList()
+    real_maximo = lt.newList()
+    for i in range(1, 20):
+        if i == 9:
+            lt.addLast(real_minimo, en_min)
+            lt.addLast(real_maximo, en_max)
+        else:
+            lt.addLast(real_minimo, '')
+            lt.addLast(real_maximo, '')
+    return catalog.req_2(real_minimo, real_maximo, dan_min, dan_max)
+
+def req_3(catalog: model.catalog, inst_min: float, inst_max: float, temp_min: float, temp_max: float):
+    real_minimo = lt.newList()
+    real_maximo = lt.newList()
+    for i in range(1, 20):
+        if i == 1:
+            lt.addLast(real_minimo, inst_min)
+            lt.addLast(real_maximo, inst_max)
+        else:
+            lt.addLast(real_minimo, '')
+            lt.addLast(real_maximo, '')
+    return catalog.req_3(real_minimo, real_maximo, temp_min, temp_max)
+
+def req_4(catalog: model.catalog, generos):
+    return catalog.req_4(generos)
+
+def req_5(catalog: model.catalog):
+    return catalog.req_5()

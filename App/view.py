@@ -24,6 +24,7 @@ import config as cf
 import sys
 import controller
 from DISClib.ADT import list as lt
+from DISClib.DataStructures import linkedlistiterator as ll_it 
 assert cf
 
 
@@ -39,11 +40,45 @@ def printMenu():
     print("1- Cargar información en el catálogo")
     print("2- Reproducciones por rango de característica")
     print("3- Música para festejar")
-    print("4- Música para bailar")
+    print("4- Música para estudiar")
     print("5- Estudiar género")
     print("6- Género Musical más escuchado")
 
 catalog = None
+
+def print_req_2(resultado):
+    iterator = ll_it.newIterator(resultado)
+    while ll_it.hasNext(iterator):
+        res = tuple(ll_it.next(iterator))
+        print("{} tiene {} de energía y {} de danceabilidad".format(*res))
+
+def print_req_3(resultado):
+    iterator = ll_it.newIterator(resultado)
+    while ll_it.hasNext(iterator):
+        res = tuple(ll_it.next(iterator))
+        print("{} tiene {} de instrumentalidad y {} de tempo".format(*res))
+
+def aux_print_4(resultado):
+    iterator = ll_it.newIterator(resultado)
+    while ll_it.hasNext(iterator):
+        res = ll_it.next(iterator)
+        print(res)
+
+def print_req_4(resultado):
+    iterator = ll_it.newIterator(resultado)
+    while ll_it.hasNext(iterator):
+        res = tuple(ll_it.next(iterator))
+        print("{} tiene {} y {} artistas".format(*res[0:3]))
+        print("Artistas de {}".format(res[0]))
+        aux_print_4(res[3])
+        print("\n\n")
+
+
+def print_req_5(resultado):
+    iterator = ll_it.newIterator(resultado)
+    while ll_it.hasNext(iterator):
+        res = tuple(ll_it.next(iterator))
+        print("{} tiene {} reproducciones".format(*res))
 
 """
 Menu principal
@@ -56,19 +91,41 @@ while True:
         print("Cargando información de los archivos ....")
         catalog = controller.create_catalog()
     elif int(inputs[0]) == 2:
-        char_i = int(input("Introduzca el índice de la característica: "))
+        char_i = input("Introduzca la característica: ")
         minimo = input("Introduzca el mínimo: ")
         maximo = input("Introduzca el máximo: ")
         resultado = controller.req_1(catalog, char_i, minimo, maximo)
         print("{} reproducciones y {} artistas".format(*resultado))
     elif int(inputs[0]) == 3:
-        pass
+        en_min = float(input("Introduzca el mínimo de energía: "))
+        en_max = float(input("Introduzca el máximo de energía: "))
+        dan_min = float(input("Introduzca el mínimo de danceabilidad: "))
+        dan_max = float(input("Introduzca el máximo de danceabilidad: "))
+        resultado = controller.req_2(catalog, en_min, en_max, dan_min, dan_max)
+        print("{} canciones".format(resultado[0]))
+        print_req_2(resultado[1])
     elif int(inputs[0]) == 4:
-        pass
+        inst_min = float(input("Introduzca el mínimo de instrumentalidad: "))
+        inst_max = float(input("Introduzca el máximo de instrumentalidad: "))
+        temp_min = float(input("Introduzca el mínimo de tempo: "))
+        temp_max = float(input("Introduzca el máximo de tempo: "))
+        resultado = controller.req_3(catalog, inst_min, inst_max, temp_min, temp_max)
+        print("{} canciones".format(resultado[0]))
+        print_req_3(resultado[1])
     elif int(inputs[0]) == 5:
-        pass
+        genero = "t"
+        generos = lt.newList()
+        while True:
+            genero = input("Introduzca el género o deje vacío para terminar: ")
+            if not genero:
+                break
+            lt.addLast(generos, genero)
+        resultado =controller.req_4(catalog, generos)
+        print_req_4(resultado)
     elif int(inputs[0]) == 6:
-        pass
+        resultado = controller.req_5(catalog)
+        print_req_5(resultado[0])
+        print("{} es el máximo con {} reproducciones".format(*resultado[1]))
     else:
         sys.exit(0)
 sys.exit(0)
